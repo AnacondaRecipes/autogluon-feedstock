@@ -109,6 +109,35 @@ outputs:
         - pip check
         - cd tabular && pytest
 
+  - name: {{ name }}-mxnet
+    script: install_mxnet.sh
+    requirements:
+      host:
+        - pip
+        - python
+        - wheel
+        - setuptools
+      run:
+        - python
+        - numpy
+        - pandas
+        - scikit-learn
+        - pillow
+        - matplotlib
+        - {{ pin_subpackage(name + '-core', max_pin='x.x.x.x.x.x') }}
+        - autograd >=1.3
+        - python-graphviz
+        - scipy <1.7
+    test:
+      requires:
+        - pip
+        - pytest
+      imports:
+        - autogluon.mxnet
+      commands:
+        - pip check
+        - cd mxnet && pytest
+
 about:
   license: Apache 2.0
   license_family: Apache
