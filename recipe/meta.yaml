@@ -51,7 +51,64 @@ outputs:
       commands:
         - pip check
         - cd core && pytest
-       
+
+  - name: {{ name }}-features
+    script: install_features.sh
+    requirements:
+      host:
+        - pip
+        - python
+        - wheel
+        - setuptools
+      run:
+        - python
+        - numpy
+        - pandas
+        - scikit-learn
+        - {{ pin_subpackage(name + '-core', max_pin='x.x.x.x.x.x') }}
+        - autograd >=1.3
+        - python-graphviz
+        - scipy <1.7
+    test:
+      requires:
+        - pip
+        - pytest
+      imports:
+        - autogluon.features
+      commands:
+        - pip check
+        - cd features && pytest
+
+  - name: {{ name }}-tabular
+    script: install_tabular.sh
+    requirements:
+      host:
+        - pip
+        - python
+        - wheel
+        - setuptools
+      run:
+        - python
+        - numpy
+        - scipy <1.7
+        - pandas
+        - scikit-learn
+        - psutil >=5.7.3,<5.9
+        - networkx >=2.3,<3.0
+        - {{ pin_subpackage(name + '-core', max_pin='x.x.x.x.x.x') }}
+        - {{ pin_subpackage(name + '-features', max_pin='x.x.x.x.x.x') }}
+        - autograd >=1.3
+        - python-graphviz
+    test:
+      requires:
+        - pip
+        - pytest
+      imports:
+        - autogluon.tabular
+      commands:
+        - pip check
+        - cd tabular && pytest
+
 about:
   license: Apache 2.0
   license_family: Apache
