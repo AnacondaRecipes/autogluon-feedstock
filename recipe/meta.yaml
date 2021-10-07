@@ -61,11 +61,7 @@ outputs:
         - wheel
         - setuptools
       run:
-        - python
-        - numpy
-        - pandas
-        - scikit-learn
-        - {{ pin_subpackage(name + '-core', max_pin='x.x.x.x.x.x') }}
+        - {{ pin_subpackage(name + '-core') }}
         - autograd >=1.3
         - python-graphviz
         - scipy <1.7
@@ -88,15 +84,11 @@ outputs:
         - wheel
         - setuptools
       run:
-        - python
-        - numpy
+        - {{ pin_subpackage(name + '-core') }}
+        - {{ pin_subpackage(name + '-features') }}
         - scipy <1.7
-        - pandas
-        - scikit-learn
         - psutil >=5.7.3,<5.9
         - networkx >=2.3,<3.0
-        - {{ pin_subpackage(name + '-core', max_pin='x.x.x.x.x.x') }}
-        - {{ pin_subpackage(name + '-features', max_pin='x.x.x.x.x.x') }}
         - autograd >=1.3
         - python-graphviz
     test:
@@ -109,34 +101,64 @@ outputs:
         - pip check
         - cd tabular && pytest
 
-  - name: {{ name }}-mxnet
-    script: install_mxnet.sh
-    requirements:
-      host:
-        - pip
-        - python
-        - wheel
-        - setuptools
-      run:
-        - python
-        - numpy
-        - pandas
-        - scikit-learn
-        - pillow
-        - matplotlib
-        - {{ pin_subpackage(name + '-core', max_pin='x.x.x.x.x.x') }}
-        - autograd >=1.3
-        - python-graphviz
-        - scipy <1.7
-    test:
-      requires:
-        - pip
-        - pytest
-      imports:
-        - autogluon.mxnet
-      commands:
-        - pip check
-        - cd mxnet && pytest
+#  - name: {{ name }}-mxnet
+#    script: install_mxnet.sh
+#    requirements:
+#      host:
+#        - pip
+#        - python
+#        - wheel
+#        - setuptools
+#      run:
+#        - {{ pin_subpackage(name + '-core') }}
+#        - mxnet
+#        - python
+#        - numpy
+#        - pandas
+#        - scikit-learn
+#        - pillow
+#        - matplotlib
+#        - autograd >=1.3
+#        - python-graphviz
+#        - scipy <1.7
+#    test:
+#      requires:
+#        - pip
+#        - pytest
+#        - openml
+#      imports:
+#        - autogluon.mxnet
+#      commands:
+#        - pip check
+#        - cd mxnet && pytest
+
+#  - name: {{ name }}-extra
+#    script: install_extra.sh
+#    requirements:
+#      host:
+#        - pip
+#        - python
+#        - wheel
+#        - setuptools
+#      run:
+#        - {{ pin_subpackage(name + '-core'}}
+#        - python
+#        - numpy
+#        - scipy <1.7
+#        - pandas
+#        - scikit-learn
+#        - gluoncv
+#        - python-graphviz
+#        - autograd >=1.3
+#    test:
+#      requires:
+#        - pip
+#        - pytest
+#      imports:
+#        - autogluon.extra
+#      commands:
+#        - pip check
+#        - cd extra && pytest
 
 about:
   license: Apache 2.0
