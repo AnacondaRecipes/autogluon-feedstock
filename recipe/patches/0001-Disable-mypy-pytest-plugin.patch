@@ -1,0 +1,26 @@
+From 98e91e657750341971b9cf9a5394fd19b37c7a3f Mon Sep 17 00:00:00 2001
+From: Jean-Christophe Morin <jcmorin@anaconda.com>
+Date: Thu, 30 Nov 2023 13:39:57 -0500
+Subject: [PATCH] Disable mypy pytest plugin
+
+---
+ common/tests/conftest.py | 2 --
+ core/tests/conftest.py   | 2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/common/tests/conftest.py b/common/tests/conftest.py
+index 1b1394ea..3178a8fd 100644
+--- a/common/tests/conftest.py
++++ b/common/tests/conftest.py
+@@ -7,8 +7,6 @@ def pytest_addoption(parser):
+ 
+ def pytest_configure(config):
+     config.addinivalue_line("markers", "slow: mark test as slow to run")
+-    plugin = config.pluginmanager.getplugin("mypy")
+-    plugin.mypy_argv.append("--ignore-missing-imports")
+ 
+ 
+ def pytest_collection_modifyitems(config, items):
+-- 
+2.43.0
+
