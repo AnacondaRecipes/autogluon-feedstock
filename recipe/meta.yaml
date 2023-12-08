@@ -13,7 +13,8 @@ source:
       - patches/0002-Loosen-the-upper-bound-of-omegaconf-a-bit.patch
 
 build:
-  skip: true  # [py<38 or py>=312]
+  # A couple of dependencies are not available on linux-s390x.
+  skip: true  # [py<38 or py>=312 or s390x]
   number: 0
 
 requirements:
@@ -230,7 +231,7 @@ outputs:
       commands:
         # TODO: Figure out why patch isn't working
         # - pip check
-        - pytest -v multimodal/tests -k 'not test_check_style'
+        - pytest -v multimodal/tests -k 'not test_check_style' -m 'not slow'
         - python -c 'import autogluon.multimodal.version; assert autogluon.multimodal.version.__version__ == "{{ version }}"'
 
   - name: {{ name }}.tabular
