@@ -21,6 +21,20 @@ index 1b1394ea..3178a8fd 100644
  
  
  def pytest_collection_modifyitems(config, items):
+diff --git a/core/tests/conftest.py.orig b/core/tests/conftest.py
+index a323ce1..4c6c230 100644
+--- a/core/tests/conftest.py.orig
++++ b/core/tests/conftest.py
+@@ -9,8 +9,6 @@ def pytest_addoption(parser):
+ def pytest_configure(config):
+     config.addinivalue_line("markers", "slow: mark test as slow to run")
+     config.addinivalue_line("markers", "platform: mark test as Ubuntu/Linux/Mac platform test")
+-    plugin = config.pluginmanager.getplugin("mypy")
+-    plugin.mypy_argv.append("--ignore-missing-imports")
+ 
+ 
+ def pytest_collection_modifyitems(config, items):
+
 -- 
 2.43.0
 

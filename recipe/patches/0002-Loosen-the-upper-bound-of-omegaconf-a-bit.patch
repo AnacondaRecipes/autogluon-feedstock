@@ -1,0 +1,27 @@
+From 367b17757e94453946eaff89f883b3c885267d0a Mon Sep 17 00:00:00 2001
+From: Jean-Christophe Morin <jcmorin@anaconda.com>
+Date: Fri, 8 Dec 2023 14:55:27 -0500
+Subject: [PATCH] Loosen the upper bound of omegaconf a bit
+
+Deviating from upstream. omegaconf-2.2.3 isn't fully compatible with Python 3.11.
+
+---
+ multimodal/setup.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/multimodal/setup.py b/multimodal/setup.py
+index 74f2a4e3..6a25a51b 100644
+--- a/multimodal/setup.py
++++ b/multimodal/setup.py
+@@ -41,7 +41,7 @@ install_requires = [
+     "torchmetrics>=0.11.0,<0.12.0",
+     "transformers[sentencepiece]>=4.23.0,<4.27.0",
+     "nptyping>=1.4.4,<2.5.0",
+-    "omegaconf>=2.1.1,<2.3.0",
++    "omegaconf>=2.1.1,<2.4.0",
+     f"autogluon.core[raytune]=={version}",
+     f"autogluon.features=={version}",
+     f"autogluon.common=={version}",
+-- 
+2.43.0
+

@@ -1,2 +1,30 @@
 upload_channels:
   - sfe1ed40
+
+channels:
+  # lightning
+  - https://staging.continuum.io/prefect/fs/lightning-feedstock/pr1/1797900
+  - https://staging.continuum.io/prefect/fs/dateutils-feedstock/pr2/c1f185c
+  - https://staging.continuum.io/prefect/fs/deepdiff-feedstock/pr2/7e21774
+  - https://staging.continuum.io/prefect/fs/inquirer-feedstock/pr2/570b0de
+  - https://staging.continuum.io/prefect/fs/starsessions-feedstock/pr2/31622bc
+  - https://staging.continuum.io/prefect/fs/lightning-cloud-feedstock/pr1/0b24257
+
+  # nlpaug
+  - https://staging.continuum.io/prefect/fs/nlpaug-feedstock/pr2/63815c2
+  - https://staging.continuum.io/prefect/fs/gdown-feedstock/pr2/57d94c4
+
+  # nptyping
+  - https://staging.continuum.io/prefect/fs/nptyping-feedstock/pr2/7d7e685
+
+  # openmim
+  - https://staging.continuum.io/prefect/fs/openmim-feedstock/pr1/efb357e
+  - https://staging.continuum.io/prefect/fs/model-index-feedstock/pr1/6f31692
+
+  - https://staging.continuum.io/prefect/fs/pytorch-metric-learning-feedstock/pr1/d5dda37
+
+  - https://staging.continuum.io/prefect/fs/seqeval-feedstock/pr2/0a184cf
+
+  - https://staging.continuum.io/prefect/fs/timm-feedstock/pr2/b888b0b
+
+  - https://staging.continuum.io/prefect/fs/ray-packages-feedstock/pr15/b7c2ee6
