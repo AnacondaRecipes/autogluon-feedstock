@@ -27,4 +27,4 @@ channels:
 
   - https://staging.continuum.io/prefect/fs/timm-feedstock/pr2/b888b0b
 
-  - https://staging.continuum.io/prefect/fs/ray-packages-feedstock/pr15/b7c2ee6
+  - https://staging.continuum.io/prefect/fs/ray-packages-feedstock/pr15/e90d124
