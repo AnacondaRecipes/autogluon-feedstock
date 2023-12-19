@@ -17,7 +17,7 @@ build:
   # We skip osx-64 because our pytorch 2+ builds on osx-64 require openblas while our
   # scikit-learn builds require mkl. Both are mutually exclusive.
   # We skip win-64 because pytesseract (and tesseract) are not built for win-64.
-  skip: true  # [py<38 or py>=312 or s390x or osx-64 or win-64]
+  skip: true  # [py<38 or py>=312 or s390x or (osx and x86_64) or win]
   number: 0
 
 requirements:
