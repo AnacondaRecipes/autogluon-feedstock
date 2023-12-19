@@ -1,7 +1,7 @@
 From 98e91e657750341971b9cf9a5394fd19b37c7a3f Mon Sep 17 00:00:00 2001
 From: Jean-Christophe Morin <jcmorin@anaconda.com>
 Date: Thu, 30 Nov 2023 13:39:57 -0500
-Subject: [PATCH] Disable mypy pytest plugin
+Subject: [PATCH] Disable mypy pytest plugin. We don't have pytest-mypy and we don't need to run mypy anyway.
 
 ---
  common/tests/conftest.py | 2 --
