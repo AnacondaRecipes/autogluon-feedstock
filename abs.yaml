@@ -3,6 +3,4 @@ upload_channels:
 
 channels:
   - https://staging.continuum.io/prefect/fs/gluon-ts-feedstock/pr3/edb75cb
-  - https://staging.continuum.io/prefect/fs/triad-feedstock/pr2/ab61b99
-  - https://staging.continuum.io/prefect/fs/qpd-feedstock/pr3/46e844a
-  - https://staging.continuum.io/prefect/fs/fugue-feedstock/pr2/e26a5c8
+  - https://staging.continuum.io/prefect/fs/statsforecast-feedstock/pr4/8c6abbc

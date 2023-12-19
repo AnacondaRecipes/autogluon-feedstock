@@ -11,7 +11,6 @@ source:
     patches:
       - patches/0001-Disable-mypy-pytest-plugin.patch
       - patches/0002-Adjust-multimodal-requirements-in-setup.py.patch
-      - patches/0003-Adjust-timeseries-requirements-in-setup.py.patch
 
 build:
   # A couple of dependencies are not available on linux-s390x.
@@ -211,6 +210,7 @@ outputs:
         - torchmetrics <1.2.0,>=1.0.0
         - nptyping <2.5.0,>=1.4.4
         # Deviating from upstream. omegaconf-2.2.3 isn't fully compatible with Python 3.11.
+        # conda-forge does the same thing.
         - omegaconf <2.4.0,>=2.1.1
         - {{ pin_subpackage(name ~ '.core', exact=True) }}
         - {{ pin_subpackage(name ~ '.features', exact=True) }}
@@ -304,11 +304,7 @@ outputs:
         - statsmodels <0.15,>=0.13.0
         - gluonts <0.15,>=0.14.0
         - networkx <4,>=3.0
-
-        # Deviating slightly from upstram. Upstream wants <1.5,>=1.4.0. For now we have 1.5 on sfe1ed40.
-        # 1.5 should be fine.
-        - statsforecast <1.6,>=1.4.0
-
+        - statsforecast <1.5,>=1.4.0
         - mlforecast <0.10.1,>=0.10.0
         - utilsforecast <0.0.11,>=0.0.10
         - tqdm <5,>=4.38
