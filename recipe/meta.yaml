@@ -89,9 +89,8 @@ outputs:
         - pip check
         - cd common
         # Skip test_check_style because it runs linters. We don't need to run linters.
-        # test_dynamic_resource_allocation can fail when there isn't enough memory available.
-        - pytest -v tests -k 'not (test_check_style or test_dynamic_resource_allocation)'
-        - python -c 'import autogluon.common.version; assert autogluon.common.version.__version__ == "{{ version }}"'
+        - pytest -v tests -k "not test_check_style"
+        - python -c "import autogluon.common.version; assert autogluon.common.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.core
     build:
@@ -137,8 +136,9 @@ outputs:
         - pip check
         - cd core
         # Skip test_check_style because it runs linters. We don't need to run linters.
-        - pytest -v tests -k 'not test_check_style'
-        - python -c 'import autogluon.core.version; assert autogluon.core.version.__version__ == "{{ version }}"'
+        # test_dynamic_resource_allocation can fail when there isn't enough memory available.
+        - pytest -v tests -k "not (test_check_style or test_dynamic_resource_allocation)"
+        - python -c "import autogluon.core.version; assert autogluon.core.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.features
     build:
@@ -169,8 +169,8 @@ outputs:
         - pip check
         - cd features
         # Skip test_check_style because it runs linters. We don't need to run linters.
-        - pytest -v tests -k 'not test_check_style'
-        - python -c 'import autogluon.features.version; assert autogluon.features.version.__version__ == "{{ version }}"'
+        - pytest -v tests -k "not test_check_style"
+        - python -c "import autogluon.features.version; assert autogluon.features.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.multimodal
     build:
@@ -237,8 +237,8 @@ outputs:
 
         # Tests are very slow. Just skip them
         #- cd multimodal
-        #- pytest -v tests -k 'not test_check_style' -m 'not slow'
-        - python -c 'import autogluon.multimodal.version; assert autogluon.multimodal.version.__version__ == "{{ version }}"'
+        #- pytest -v tests -k "not test_check_style" -m "not slow"
+        - python -c "import autogluon.multimodal.version; assert autogluon.multimodal.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.tabular
     build:
@@ -278,8 +278,8 @@ outputs:
         - pip check
         # These tests are very very slow, so skip them.
         #- cd tabular
-        #- pytest -v tests -k 'not test_check_style' -m 'not slow' --ignore=tests/regressiontests
-        - python -c 'import autogluon.tabular.version; assert autogluon.tabular.version.__version__ == "{{ version }}"'
+        #- pytest -v tests -k "not test_check_style" -m "not slow" --ignore=tests/regressiontests
+        - python -c "import autogluon.tabular.version; assert autogluon.tabular.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.timeseries
     build:
@@ -330,8 +330,8 @@ outputs:
       commands:
         - pip check
         - cd timeseries
-        - pytest -v tests -k 'not test_check_style' -m 'not slow'
-        - python -c 'import autogluon.timeseries.version; assert autogluon.timeseries.version.__version__ == "{{ version }}"'
+        - pytest -v tests -k "not test_check_style" -m "not slow"
+        - python -c "import autogluon.timeseries.version; assert autogluon.timeseries.version.__version__ == '{{ version }}'"
 
 about:
   home: https://auto.gluon.ai/
