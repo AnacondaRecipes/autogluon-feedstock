@@ -1,6 +1,2 @@
 upload_channels:
   - sfe1ed40
-
-channels:
-  - https://staging.continuum.io/prefect/fs/gluon-ts-feedstock/pr3/edb75cb
-  - https://staging.continuum.io/prefect/fs/statsforecast-feedstock/pr4/8c6abbc
