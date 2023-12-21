@@ -1,178 +1,347 @@
 {% set name = "autogluon" %}
-{% set version = "0.3.1" %}
+{% set version = "1.0.0" %}
 
 package:
-  name: {{ name }}-split
+  name: {{ name }}-suite
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
-  url: https://github.com/awslabs/autogluon/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: 42152eafbbfa04c2c8b002fe37a3b82a915db6aa1d76859c0220c238a4759ede
+  - url: https://github.com/{{ name }}/{{ name }}/archive/refs/tags/v{{ version }}.tar.gz
+    sha256: a4d950b5c796a835c690d25dc2406ab35062a973ed70685f5b8f1e850b780bbc
+    patches:
+      - patches/0001-Disable-mypy-pytest-plugin.patch
+      - patches/0002-Adjust-multimodal-requirements-in-setup.py.patch
 
 build:
+  # A couple of dependencies are not available on linux-s390x.
+  # We skip osx-64 because our pytorch 2+ builds on osx-64 require openblas while our
+  # scikit-learn builds require mkl. Both are mutually exclusive.
+  # We skip win-64 because pytesseract (and tesseract) are not built for win-64.
+  skip: true  # [py<38 or py>=312 or s390x or (osx and x86_64) or win]
   number: 0
-# NOTE: This package has python pinned <3.9 because it doesn't work at
-# all with 3.9, the installers won't even run.
-  #noarch: python
+
+requirements:
+  build:
+    - patch  # [not win]
+    - m2-patch  # [win]
 
 outputs:
-  - name: {{ name }}-core
-    script: install_core.sh
+  - name: {{ name }}
+    build:
+      script: python -m pip install ./autogluon -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
     requirements:
       host:
+        - python
         - pip
-        - python <3.9
-        - wheel
         - setuptools
+        - wheel
       run:
-        - python <3.9
-        - numpy
-        - scipy <1.7 # not in setup but pip check complains
-        - scikit-learn
-        - pandas
-        - tqdm
-        - python-graphviz
-        - cython
-        - configspace 0.4.19
-        - tornado >=5.0.1
-        - requests
-        - matplotlib
-        - paramiko >=2.4
-        - dask >=2.6.0
-        - distributed >=2.6.0
-        - boto3
-        - autograd >=1.3
-        - dill >=0.3.3,<1.0
+        - python
+        - {{ pin_subpackage(name ~ '.common', exact=True) }}
+        - {{ pin_subpackage(name ~ '.core', exact=True) }}
+        - {{ pin_subpackage('autogluon.features', exact=True) }}
+        - {{ pin_subpackage('autogluon.tabular', exact=True) }}
+        - {{ pin_subpackage('autogluon.multimodal', exact=True) }}
+        - {{ pin_subpackage('autogluon.timeseries', exact=True) }}
     test:
+      imports:
+        - autogluon
+        - autogluon.core
+        - autogluon.common
+        - autogluon.features
+        - autogluon.tabular
+        - autogluon.multimodal
+        - autogluon.timeseries
       requires:
         - pip
+      commands:
+        - pip check
+
+  - name: {{ name }}.common
+    build:
+      script: python -m pip install ./common -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy <1.29,>=1.21
+        - pandas <2.2.0,>=2.0.0
+        - boto3 <2,>=1.10
+        - psutil <6,>=5.7.3
+        - tqdm <5,>=4.38
+    test:
+      source_files:
+        - common/tests
+      imports:
+        - autogluon.common
+        - autogluon.common.space
+      requires:
+        - python
+        - pip
         - pytest
+      commands:
+        - pip check
+        - cd common
+        # Skip test_check_style because it runs linters. We don't need to run linters.
+        - pytest -v tests -k "not test_check_style"
+        - python -c "import autogluon.common.version; assert autogluon.common.version.__version__ == '{{ version }}'"
+
+  - name: {{ name }}.core
+    build:
+      script: python -m pip install ./core -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy <1.29,>=1.21
+        - scipy <1.13,>=1.5.4
+        - scikit-learn <1.5,>=1.3.0
+        - networkx <4,>=3.0
+        - pandas <2.2.0,>=2.0.0
+        - tqdm <5,>=4.38
+        - requests
+        - matplotlib-base
+        - boto3 <2,>=1.10
+        - {{ pin_subpackage(name ~ '.common', exact=True) }}
+
+        # Extra group "all". autogluon.tabular requires autogluon.core[all]
+        # Note that "all" depends on ray[default], ray[default,tune], async-timeout and hyperopt.
+        - async-timeout
+
+        # Extra group "raytune". autogluon.multimodal requires autogluon.core[raytune].
+        - ray-tune <2.7,>=2.6.3
+        - ray-default <2.7,>=2.6.3
+        - hyperopt <0.2.8,>=0.2.7
+    test:
+      source_files:
+        - core/tests
       imports:
         - autogluon.core
-      commands:
-        - pip check
-        - cd core && pytest
-
-  - name: {{ name }}-features
-    script: install_features.sh
-    requirements:
-      host:
-        - pip
-        - python <3.9
-        - wheel
-        - setuptools
-      run:
-        - {{ pin_subpackage(name + '-core') }}
-    test:
       requires:
         - pip
         - pytest
+      commands:
+        - pip check
+        - cd core
+        # Skip test_check_style because it runs linters. We don't need to run linters.
+        # test_dynamic_resource_allocation can fail when there isn't enough memory available.
+        - pytest -v tests -k "not (test_check_style or test_dynamic_resource_allocation)"
+        - python -c "import autogluon.core.version; assert autogluon.core.version.__version__ == '{{ version }}'"
+
+  - name: {{ name }}.features
+    build:
+      script: python -m pip install ./features -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy <1.29,>=1.21
+        - pandas <2.2.0,>=2.0.0
+        - scikit-learn <1.5,>=1.3.0
+        - {{ pin_subpackage(name ~ '.common', exact=True) }}
+    test:
+      source_files:
+        - features/tests
       imports:
         - autogluon.features
-      commands:
-        - pip check
-        - cd features && pytest
-
-  - name: {{ name }}-tabular
-    script: install_tabular.sh
-    requirements:
-      host:
-        - pip
-        - python <3.9
-        - wheel
-        - setuptools
-      run:
-        - {{ pin_subpackage(name + '-core') }}
-        - {{ pin_subpackage(name + '-features') }}
-        - psutil >=5.7.3,<5.9
-        - networkx >=2.3,<3.0
-    test:
       requires:
         - pip
         - pytest
+      commands:
+        - pip check
+        - cd features
+        # Skip test_check_style because it runs linters. We don't need to run linters.
+        - pytest -v tests -k "not test_check_style"
+        - python -c "import autogluon.features.version; assert autogluon.features.version.__version__ == '{{ version }}'"
+
+  - name: {{ name }}.multimodal
+    build:
+      script: python -m pip install ./multimodal -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy <1.29,>=1.21
+        - scipy <1.13,>=1.5.4
+        - pandas <2.2.0,>=2.0.0
+        - scikit-learn <1.5,>=1.3.0
+        - Pillow <11,>=10.0.1
+        - tqdm <5,>=4.38
+        - boto3 <2,>=1.10
+        - pytorch <2.1,>=2.0
+        - lightning <2.1,>=2.0.0
+        - requests <3,>=2.21
+        - jsonschema <4.18,>=4.14
+        - seqeval <1.3.0,>=1.2.2
+        - evaluate <0.5.0,>=0.4.0
+        - huggingface_accelerate <0.22.0,>=0.21.0
+
+        # transformers[sentencepiece]
+        - transformers <4.32.0,>=4.31.0
+        - sentencepiece !=0.1.92,>=0.1.91
+
+        - timm <0.10.0,>=0.9.5
+        - torchvision <0.16.0,>=0.14.0
+        - scikit-image <0.21.0,>=0.19.1
+        - text-unidecode <1.4,>=1.3
+        - torchmetrics <1.2.0,>=1.0.0
+        - nptyping <2.5.0,>=1.4.4
+        # Deviating from upstream. omegaconf-2.2.3 isn't fully compatible with Python 3.11.
+        # conda-forge does the same thing.
+        - omegaconf <2.4.0,>=2.1.1
+        - {{ pin_subpackage(name ~ '.core', exact=True) }}
+        - {{ pin_subpackage(name ~ '.features', exact=True) }}
+        - {{ pin_subpackage(name ~ '.common', exact=True) }}
+        - pytorch-metric-learning <2.0,>=1.3.0
+        - nlpaug <1.2.0,>=1.1.10
+        - nltk <4.0.0,>=3.4.5
+        - openmim <0.4.0,>=0.3.7
+        - defusedxml <0.7.2,>=0.7.1
+        - jinja2 <3.2,>=3.0.3
+        - tensorboard <3,>=2.9
+        - pytesseract <0.3.11,>=0.3.9
+        # nvidia-ml-py has a run_constrained that explicitly conflicts with nvidia-ml.
+        # autogluon indirectly depends on nvidia-ml-py so we can't depend on nvidia-ml.
+        # And anyway it's not imported by any autogluon code.
+        #- nvidia-ml 7.352.0
+    test:
+      imports:
+        - autogluon.multimodal
+      requires:
+        - pip
+      commands:
+        - pip check
+
+        # Tests are very slow. Just skip them
+        #- cd multimodal
+        #- pytest -v tests -k "not test_check_style" -m "not slow"
+        - python -c "import autogluon.multimodal.version; assert autogluon.multimodal.version.__version__ == '{{ version }}'"
+
+  - name: {{ name }}.tabular
+    build:
+      script: python -m pip install ./tabular -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy <1.29,>=1.21
+        - scipy <1.13,>=1.5.4
+        - pandas <2.2.0,>=2.0.0
+        - scikit-learn <1.5,>=1.3.0
+        - networkx <4,>=3.0
+        - {{ pin_subpackage(name ~ '.core', exact=True) }}
+        - {{ pin_subpackage(name ~ '.features', exact=True) }}
+        # These are for the extra group "all".
+        - xgboost <2.1,>=1.6
+        - {{ pin_subpackage(name ~ '.core', exact=True) }}
+        - pytorch <2.1,>=2.0
+        - fastai <2.8,>=2.3.1
+        - lightgbm <4.2,>=3.3
+        - catboost <1.3,>=1.1
+    test:
       imports:
         - autogluon.tabular
+      requires:
+        - pip
+      requires:
+        - pip
       commands:
         - pip check
-        - cd tabular && pytest
+        # These tests are very very slow, so skip them.
+        #- cd tabular
+        #- pytest -v tests -k "not test_check_style" -m "not slow" --ignore=tests/regressiontests
+        - python -c "import autogluon.tabular.version; assert autogluon.tabular.version.__version__ == '{{ version }}'"
 
-  - name: {{ name }}-mxnet
-    script: install_mxnet.sh
+  - name: {{ name }}.timeseries
+    build:
+      script: python -m pip install ./timeseries -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
     requirements:
       host:
+        - python
         - pip
-        - python <3.9
-        - wheel
         - setuptools
+        - wheel
       run:
-        - {{ pin_subpackage(name + '-core') }}
-        - mxnet
-        - pillow
+        - python
+        - joblib <2,>=1.1
+        - numpy <1.29,>=1.21
+        - scipy <1.13,>=1.5.4
+        - pandas <2.2.0,>=2.0.0
+        - pytorch <2.1,>=2.0
+        - lightning <2.1,>=2.0.0
+        - pytorch-lightning <2.1,>=2.0.0
+        - statsmodels <0.15,>=0.13.0
+        - gluonts <0.15,>=0.14.0
+        - networkx <4,>=3.0
+        - statsforecast <1.5,>=1.4.0
+        - mlforecast <0.10.1,>=0.10.0
+        - utilsforecast <0.0.11,>=0.0.10
+        - tqdm <5,>=4.38
+        - orjson >=3.9,<3.10
+        - tensorboard <3,>=2.9
+        - {{ pin_subpackage(name ~ '.core', exact=True) }}
+        - {{ pin_subpackage(name ~ '.common', exact=True) }}
+        - {{ pin_subpackage(name ~ '.tabular', exact=True) }}
     test:
+      source_files:
+        - timeseries/tests
+      imports:
+        - autogluon.timeseries
       requires:
         - pip
         - pytest
-        - openml
-      imports:
-        - autogluon.mxnet
+        - flaky
+        - pytest-timeout
       commands:
         - pip check
-        - cd mxnet && pytest
-
-#  - name: {{ name }}-extra
-#    script: install_extra.sh
-#    requirements:
-#      host:
-#        - pip
-#        - python
-#        - wheel
-#        - setuptools
-#      run:
-#        - {{ pin_subpackage(name + '-core') }}
-#        - gluon-cv
-#    test:
-#      requires:
-#        - pip
-#    #    - pytest
-#    #    - openml
-#    #  imports:
-#    #    - autogluon.extra
-#      commands:
-#         - python --version
-#    #    - pip check
-#    #    - cd extra && pytest
-
-  - name: {{ name }}-forecasting
-    script: install_forecasting.sh
-    requirements:
-      host:
-        - pip
-        - python <3.9
-        - wheel
-        - setuptools
-      run:
-        - {{ pin_subpackage(name + '-core') }}
-        - gluonts
-    test:
-      requires:
-        - pip
-        - pytest
-      imports:
-        - autogluon.forecasting
-      commands:
-        - pip check
-        - cd extra && pytest
+        - cd timeseries
+        # Only running smoketests because the other tests are very slow in Prefect. Though,
+        # it is highly recommended to run the tests locally!
+        - pytest -v tests/smoketests -k "not test_check_style" -m "not slow"
+        - python -c "import autogluon.timeseries.version; assert autogluon.timeseries.version.__version__ == '{{ version }}'"
 
 about:
-  license: Apache 2.0
+  home: https://auto.gluon.ai/
+  summary: "AutoML for Image, Text, Time Series, and Tabular Data"
+  description: AutoGluon automates machine learning tasks enabling you to easily achieve strong predictive performance in your applications. With just a few lines of code, you can train and deploy high-accuracy machine learning and deep learning models on image, text, time series, and tabular data.
+  license: Apache-2.0
   license_family: Apache
-  license_file: LICENSE
-  summary: |
-    AutoGluon automates machine learning tasks enabling you to easily achieve
-    strong predictive performance in your applications.
-
-extra:
-  recipe-maintainers:
-    - dkomisar
-
+  license_file:
+    - LICENSE
+    - NOTICE
+  dev_url: https://github.com/autogluon/autogluon
+  doc_url: https://auto.gluon.ai/
