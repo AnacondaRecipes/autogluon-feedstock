@@ -1,5 +1,23 @@
 {% set name = "autogluon" %}
-{% set version = "1.0.0" %}
+{% set version = "1.1.1" %}
+
+{% set boto3 = ">=1.10,<2" %}
+{% set numpy = ">=1.21,<1.29" %}
+{% set pandas =  ">=2.0.0,<2.3.0" %}
+{% set scikit_learn = ">=1.3.0,<1.4.1" %}
+{% set scipy = ">=1.5.4,<1.13" %}
+{% set psutil = ">=5.7.3,<6" %}
+{% set s3fs = ">=2023.1,<2025" %}
+{% set networkx = ">=3.0,<4" %}
+{% set tqdm = ">=4.38,<5" %}
+{% set Pillow = ">=10.0.1,<11" %}
+{% set pytorch = ">=2.2,<2.4" %}
+{% set lightning = ">=2.2,<2.4" %}
+{% set pytorch_lightning = ">=2.2,<2.4" %}
+{% set async_timeout = ">=4.0,<5" %}
+{% set transformers = ">=4.38.0,<4.41.0" %}
+{% set sentencepiece = "!=0.1.92,>=0.1.91" %}
+{% set huggingface_accelerate = ">=0.21.0,<0.22.0" %}
 
 package:
   name: {{ name }}-suite
@@ -7,10 +25,11 @@ package:
 
 source:
   - url: https://github.com/{{ name }}/{{ name }}/archive/refs/tags/v{{ version }}.tar.gz
-    sha256: a4d950b5c796a835c690d25dc2406ab35062a973ed70685f5b8f1e850b780bbc
+    sha256: 54eb1b144cbf6980d6fb34d1ccb870f486c3ed9086d9d6e1ff84554e5cab858a
     patches:
       - patches/0001-Disable-mypy-pytest-plugin.patch
       - patches/0002-Adjust-multimodal-requirements-in-setup.py.patch
+      - patches/0003-Increase-ray-upperbound.patch
 
 build:
   # A couple of dependencies are not available on linux-s390x.
@@ -24,6 +43,9 @@ requirements:
   build:
     - patch  # [not win]
     - m2-patch  # [win]
+  # Adding top-level host section to prevent conda-build crash
+  host:
+    - python
 
 outputs:
   - name: {{ name }}
@@ -39,8 +61,7 @@ outputs:
         - wheel
       run:
         - python
-        - {{ pin_subpackage(name ~ '.common', exact=True) }}
-        - {{ pin_subpackage(name ~ '.core', exact=True) }}
+        - {{ pin_subpackage('autogluon.core', exact=True) }}
         - {{ pin_subpackage('autogluon.features', exact=True) }}
         - {{ pin_subpackage('autogluon.tabular', exact=True) }}
         - {{ pin_subpackage('autogluon.multimodal', exact=True) }}
@@ -49,7 +70,6 @@ outputs:
       imports:
         - autogluon
         - autogluon.core
-        - autogluon.common
         - autogluon.features
         - autogluon.tabular
         - autogluon.multimodal
@@ -72,11 +92,11 @@ outputs:
         - wheel
       run:
         - python
-        - numpy <1.29,>=1.21
-        - pandas <2.2.0,>=2.0.0
-        - boto3 <2,>=1.10
-        - psutil <6,>=5.7.3
-        - tqdm <5,>=4.38
+        - numpy {{ numpy }}
+        - pandas {{ pandas }}
+        - boto3 {{ boto3 }}
+        - psutil {{ psutil }}
+        - tqdm {{ tqdm }}
     test:
       source_files:
         - common/tests
@@ -107,25 +127,20 @@ outputs:
         - wheel
       run:
         - python
-        - numpy <1.29,>=1.21
-        - scipy <1.13,>=1.5.4
-        - scikit-learn <1.5,>=1.3.0
-        - networkx <4,>=3.0
-        - pandas <2.2.0,>=2.0.0
-        - tqdm <5,>=4.38
+        - numpy {{ numpy }}
+        - scipy {{ scipy }}
+        - scikit-learn {{ scikit_learn }}
+        - networkx {{ networkx }}
+        - pandas {{ pandas }}
+        - tqdm {{ tqdm }}
         - requests
         - matplotlib-base
-        - boto3 <2,>=1.10
-        - {{ pin_subpackage(name ~ '.common', exact=True) }}
-
-        # Extra group "all". autogluon.tabular requires autogluon.core[all]
-        # Note that "all" depends on ray[default], ray[default,tune], async-timeout and hyperopt.
-        - async-timeout
-
-        # Extra group "raytune". autogluon.multimodal requires autogluon.core[raytune].
-        - ray-tune <2.7,>=2.6.3
-        - ray-default <2.7,>=2.6.3
-        - hyperopt <0.2.8,>=0.2.7
+        - boto3 {{ boto3 }}
+        - {{ pin_subpackage('autogluon.common', exact=True) }}
+        # Extra group "all". autogluon requires autogluon.core[all].
+        - ray-default >=2.10.0,<2.38      # increasing upperbound like conda-forge
+        - ray-tune >=2.10.0,<2.38         # increasing upperbound like conda-forge
+        - hyperopt >=0.2.7,<0.2.8
     test:
       source_files:
         - core/tests
@@ -142,6 +157,52 @@ outputs:
         - pytest -v tests -k "not (test_check_style or test_dynamic_resource_allocation)"
         - python -c "import autogluon.core.version; assert autogluon.core.version.__version__ == '{{ version }}'"
 
+  - name: {{ name }}.eda
+    build:
+      script: python -m pip install ./eda -v --no-deps --no-build-isolation
+      script_env:
+        RELEASE=1
+    requirements:
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - numpy {{ numpy }}
+        - scipy {{ scipy }}
+        - scikit-learn {{ scikit_learn }}
+        - pandas {{ pandas }}
+        - matplotlib-base >=3.4,<3.7
+        - missingno >=0.5.1,<0.6
+        - phik >=0.12.2,<0.13
+        - seaborn >=0.12.0,<0.13
+        - ipywidgets >=7.7.1,<9.0
+        - shap >=0.44,<0.45
+        - yellowbrick >=1.5,<1.6
+        - pyod >=1.1,<1.2
+        - suod >=0.0.8,<0.1
+        - ipython >7.16,<8.13
+        - {{ pin_subpackage('autogluon.core', exact=True) }}
+        - {{ pin_subpackage('autogluon.common', exact=True) }}
+        - {{ pin_subpackage('autogluon.features', exact=True) }}
+        - {{ pin_subpackage('autogluon.tabular', exact=True) }}
+    test:
+      source_files:
+        - eda/tests
+      imports:
+        - autogluon.eda
+      requires:
+        - pip
+        - pytest
+      commands:
+        - pip check
+        - cd eda
+        # Skip test_check_style because it runs linters. We don't need to run linters.
+        - pytest -v tests -k "not test_check_style"
+        - python -c "import autogluon.eda.version; assert autogluon.eda.version.__version__ == '{{ version }}'"
+
   - name: {{ name }}.features
     build:
       script: python -m pip install ./features -v --no-deps --no-build-isolation
@@ -155,10 +216,10 @@ outputs:
         - wheel
       run:
         - python
-        - numpy <1.29,>=1.21
-        - pandas <2.2.0,>=2.0.0
-        - scikit-learn <1.5,>=1.3.0
-        - {{ pin_subpackage(name ~ '.common', exact=True) }}
+        - numpy {{ numpy }}
+        - pandas {{ pandas }}
+        - scikit-learn {{ scikit_learn }}
+        - {{ pin_subpackage('autogluon.common', exact=True) }}
     test:
       source_files:
         - features/tests
@@ -187,49 +248,48 @@ outputs:
         - wheel
       run:
         - python
-        - numpy <1.29,>=1.21
-        - scipy <1.13,>=1.5.4
-        - pandas <2.2.0,>=2.0.0
-        - scikit-learn <1.5,>=1.3.0
-        - Pillow <11,>=10.0.1
-        - tqdm <5,>=4.38
-        - boto3 <2,>=1.10
-        - pytorch <2.1,>=2.0
-        - lightning <2.1,>=2.0.0
-        - requests <3,>=2.21
-        - jsonschema <4.18,>=4.14
-        - seqeval <1.3.0,>=1.2.2
-        - evaluate <0.5.0,>=0.4.0
-        - huggingface_accelerate <0.22.0,>=0.21.0
-
-        # transformers[sentencepiece]
-        - transformers <4.32.0,>=4.31.0
-        - sentencepiece !=0.1.92,>=0.1.91
-
-        - timm <0.10.0,>=0.9.5
-        - torchvision <0.16.0,>=0.14.0
-        - scikit-image <0.21.0,>=0.19.1
-        - text-unidecode <1.4,>=1.3
-        - torchmetrics <1.2.0,>=1.0.0
-        - nptyping <2.5.0,>=1.4.4
+        - numpy {{ numpy }}
+        - scipy {{ scipy }}
+        - pandas {{ pandas }}
+        - scikit-learn {{ scikit_learn }}
+        - Pillow {{ Pillow }}
+        - tqdm {{ tqdm }}
+        - boto3 {{ boto3 }}
+        - pytorch {{ pytorch }}
+        - lightning {{ lightning }}
+        ## transformers[sentencepiece] ##
+        - transformers {{ transformers }}
+        - sentencepiece {{ sentencepiece }}
+        - protobuf
+        ## transformers[sentencepiece] ##
+        - huggingface_accelerate {{ huggingface_accelerate }}
+        - requests>=2.21,<3
+        - jsonschema>=4.18,<4.22
+        - seqeval>=1.2.2,<1.3.0
+        - evaluate>=0.4.0,<0.5.0
+        - timm>=0.9.5,<0.10.0
+        - torchvision>=0.16.0,<0.19.0
+        - scikit-image>=0.19.1,<0.21.0
+        - text-unidecode>=1.3,<1.4
+        - torchmetrics>=1.2.0,<1.3.0
+        - nptyping>=1.4.4,<2.5.0
         # Deviating from upstream. omegaconf-2.2.3 isn't fully compatible with Python 3.11.
         # conda-forge does the same thing.
-        - omegaconf <2.4.0,>=2.1.1
-        - {{ pin_subpackage(name ~ '.core', exact=True) }}
-        - {{ pin_subpackage(name ~ '.features', exact=True) }}
-        - {{ pin_subpackage(name ~ '.common', exact=True) }}
-        - pytorch-metric-learning <2.0,>=1.3.0
-        - nlpaug <1.2.0,>=1.1.10
-        - nltk <4.0.0,>=3.4.5
-        - openmim <0.4.0,>=0.3.7
-        - defusedxml <0.7.2,>=0.7.1
-        - jinja2 <3.2,>=3.0.3
-        - tensorboard <3,>=2.9
-        - pytesseract <0.3.11,>=0.3.9
-        # nvidia-ml-py has a run_constrained that explicitly conflicts with nvidia-ml.
-        # autogluon indirectly depends on nvidia-ml-py so we can't depend on nvidia-ml.
-        # And anyway it's not imported by any autogluon code.
-        #- nvidia-ml 7.352.0
+        - omegaconf>=2.1.1,<2.4.0
+        - {{ pin_subpackage('autogluon.core', exact=True) }}
+        - {{ pin_subpackage('autogluon.features', exact=True) }}
+        - {{ pin_subpackage('autogluon.common', exact=True) }}
+        - pytorch-metric-learning>=1.3.0,<2.4
+        - nlpaug>=1.1.10,<1.2.0
+        - nltk>=3.4.5,<4.0.0
+        - openmim>=0.3.7,<0.4.0
+        - defusedxml>=0.7.1,<0.7.2
+        - jinja2>=3.0.3,<3.2
+        - tensorboard>=2.9,<3
+        - pytesseract>=0.3.9,<0.3.11
+        # nvidia-ml-py3 is deprecated and not imported in autogluon (no mention of pynvml anywhere)
+        #- nvidia-ml-py3 7.352.0
+        - pdf2image>=1.17.0,<1.19
     test:
       imports:
         - autogluon.multimodal
@@ -237,7 +297,6 @@ outputs:
         - pip
       commands:
         - pip check
-
         # Tests are very slow. Just skip them
         #- cd multimodal
         #- pytest -v tests -k "not test_check_style" -m "not slow"
@@ -256,20 +315,19 @@ outputs:
         - wheel
       run:
         - python
-        - numpy <1.29,>=1.21
-        - scipy <1.13,>=1.5.4
-        - pandas <2.2.0,>=2.0.0
-        - scikit-learn <1.5,>=1.3.0
-        - networkx <4,>=3.0
-        - {{ pin_subpackage(name ~ '.core', exact=True) }}
-        - {{ pin_subpackage(name ~ '.features', exact=True) }}
-        # These are for the extra group "all".
-        - xgboost <2.1,>=1.6
-        - {{ pin_subpackage(name ~ '.core', exact=True) }}
-        - pytorch <2.1,>=2.0
-        - fastai <2.8,>=2.3.1
-        - lightgbm <4.2,>=3.3
-        - catboost <1.3,>=1.1
+        - numpy {{ numpy }}
+        - scipy {{ scipy }}
+        - pandas {{ pandas }}
+        - scikit-learn {{ scikit_learn }}
+        - networkx {{ networkx }}
+        - {{ pin_subpackage('autogluon.core', exact=True) }}
+        - {{ pin_subpackage('autogluon.features', exact=True) }}
+        # Extra group "all". autogluon requires autogluon.tabular[all].
+        - lightgbm >=3.3,<4.4
+        - catboost >=1.1,<1.3
+        - xgboost >=1.6,<2.1
+        - pytorch {{ pytorch }}
+        - fastai >=2.3.1,<2.8
     test:
       imports:
         - autogluon.tabular
@@ -297,25 +355,37 @@ outputs:
         - wheel
       run:
         - python
-        - joblib <2,>=1.1
-        - numpy <1.29,>=1.21
-        - scipy <1.13,>=1.5.4
-        - pandas <2.2.0,>=2.0.0
-        - pytorch <2.1,>=2.0
-        - lightning <2.1,>=2.0.0
-        - pytorch-lightning <2.1,>=2.0.0
-        - statsmodels <0.15,>=0.13.0
-        - gluonts <0.15,>=0.14.0
-        - networkx <4,>=3.0
-        - statsforecast <1.5,>=1.4.0
-        - mlforecast <0.10.1,>=0.10.0
-        - utilsforecast <0.0.11,>=0.0.10
-        - tqdm <5,>=4.38
-        - orjson >=3.9,<3.10
-        - tensorboard <3,>=2.9
-        - {{ pin_subpackage(name ~ '.core', exact=True) }}
-        - {{ pin_subpackage(name ~ '.common', exact=True) }}
-        - {{ pin_subpackage(name ~ '.tabular', exact=True) }}
+        - joblib>=1.1,<2
+        - numpy {{ numpy }}
+        - scipy {{ scipy }}
+        - pandas {{ pandas }}
+        - pytorch {{ pytorch }}
+        - lightning {{ lightning }}
+        - pytorch_lightning {{ pytorch_lightning }}
+        ## transformers[sentencepiece] ##
+        - transformers {{ transformers }}
+        - sentencepiece {{ sentencepiece }}
+        - protobuf
+        ## transformers[sentencepiece] ##
+        - huggingface_accelerate {{ huggingface_accelerate }}
+        - gluonts 0.15.1
+        - networkx {{ networkx }}
+        - statsforecast >=1.4.0,<1.5
+        - mlforecast >=0.10.0,<0.10.1
+        - utilsforecast >=0.0.10,<0.0.11
+        - tqdm {{ tqdm }}
+        - orjson >=3.9,<4
+        - tensorboard >=2.9,<3
+        - {{ pin_subpackage('autogluon.core', exact=True) }}
+        - {{ pin_subpackage('autogluon.common', exact=True) }}
+        - {{ pin_subpackage('autogluon.tabular', exact=True) }}
+        # Extra group "all". autogluon requires autogluon.timeseries[all].
+        - optimum >=1.17,<1.19
+        - onnx
+        - onnxruntime >=1.11.0
+        - datasets >=1.2.1
+        - evaluate
+        - protobuf >=3.20.1
     test:
       source_files:
         - timeseries/tests
