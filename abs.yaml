@@ -3,3 +3,4 @@ upload_channels:
 
 channels:
  - https://staging.continuum.io/prefect/fs/ray-packages-feedstock/pr17/f81aa8b
+ - https://staging.continuum.io/prefect/fs/pdf2image-feedstock/pr2/405ae30
