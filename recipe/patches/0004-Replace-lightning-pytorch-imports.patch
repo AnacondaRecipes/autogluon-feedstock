@@ -1,0 +1,335 @@
+From d63933dfff20fd449c14c1c6d0d89f95f0af38fd Mon Sep 17 00:00:00 2001
+From: Mohamed Sentissi <msentissi@anaconda.com>
+Date: Thu, 28 Nov 2024 12:57:44 -0500
+Subject: [PATCH] Replace lightning pytorch imports
+
+---
+ .../autogluon/multimodal/data/datamodule.py   |  2 +-
+ .../src/autogluon/multimodal/learners/base.py |  6 ++---
+ .../multimodal/learners/few_shot_svm.py       |  2 +-
+ .../autogluon/multimodal/learners/matching.py |  2 +-
+ .../src/autogluon/multimodal/learners/ner.py  |  2 +-
+ .../multimodal/optimization/deepspeed.py      | 22 +++++++++----------
+ .../multimodal/optimization/lit_distiller.py  |  4 ++--
+ .../multimodal/optimization/lit_matcher.py    |  4 ++--
+ .../multimodal/optimization/lit_mmdet.py      |  4 ++--
+ .../multimodal/optimization/lit_module.py     |  6 ++---
+ .../src/autogluon/multimodal/utils/cache.py   |  4 ++--
+ .../autogluon/multimodal/utils/checkpoint.py  |  8 +++----
+ .../autogluon/multimodal/utils/environment.py |  2 +-
+ .../src/autogluon/multimodal/utils/hpo.py     |  2 +-
+ .../models/gluonts/abstract_gluonts.py        |  4 ++--
+ .../tests/unittests/models/test_gluonts.py    |  6 ++---
+ 16 files changed, 40 insertions(+), 40 deletions(-)
+
+diff --git a/multimodal/src/autogluon/multimodal/data/datamodule.py b/multimodal/src/autogluon/multimodal/data/datamodule.py
+index f1b9131..09d5aa2 100644
+--- a/multimodal/src/autogluon/multimodal/data/datamodule.py
++++ b/multimodal/src/autogluon/multimodal/data/datamodule.py
+@@ -1,7 +1,7 @@
+ from typing import Dict, List, Optional, Union
+ 
+ import pandas as pd
+-from lightning.pytorch import LightningDataModule
++from pytorch_lightning import LightningDataModule
+ from torch.utils.data import DataLoader, Dataset
+ 
+ from ..constants import PREDICT, TEST, TRAIN, VALIDATE
+diff --git a/multimodal/src/autogluon/multimodal/learners/base.py b/multimodal/src/autogluon/multimodal/learners/base.py
+index c562bfa..ccae6a8 100644
+--- a/multimodal/src/autogluon/multimodal/learners/base.py
++++ b/multimodal/src/autogluon/multimodal/learners/base.py
+@@ -13,12 +13,12 @@ import warnings
+ from datetime import timedelta
+ from typing import Callable, Dict, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import numpy as np
+ import pandas as pd
+ import torch
+ import yaml
+-from lightning.pytorch.strategies import DeepSpeedStrategy
++from pytorch_lightning.strategies import DeepSpeedStrategy
+ from omegaconf import DictConfig, OmegaConf
+ from packaging import version
+ from torch import nn
+@@ -2102,7 +2102,7 @@ class BaseLearner(ExportMixin, DistillationMixin, RealtimeMixin):
+     ):
+         if state_dict is None:
+             if os.path.isdir(path + "-dir"):  # deepspeed save checkpoints into a directory
+-                from lightning.pytorch.utilities.deepspeed import convert_zero_checkpoint_to_fp32_state_dict
++                from pytorch_lightning.utilities.deepspeed import convert_zero_checkpoint_to_fp32_state_dict
+ 
+                 convert_zero_checkpoint_to_fp32_state_dict(path + "-dir", path)
+                 shutil.rmtree(path + "-dir")
+diff --git a/multimodal/src/autogluon/multimodal/learners/few_shot_svm.py b/multimodal/src/autogluon/multimodal/learners/few_shot_svm.py
+index 49e2fb7..517d8f4 100644
+--- a/multimodal/src/autogluon/multimodal/learners/few_shot_svm.py
++++ b/multimodal/src/autogluon/multimodal/learners/few_shot_svm.py
+@@ -4,7 +4,7 @@ import pickle
+ from datetime import timedelta
+ from typing import Dict, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import numpy as np
+ import pandas as pd
+ import torch
+diff --git a/multimodal/src/autogluon/multimodal/learners/matching.py b/multimodal/src/autogluon/multimodal/learners/matching.py
+index ae66410..8845ae2 100644
+--- a/multimodal/src/autogluon/multimodal/learners/matching.py
++++ b/multimodal/src/autogluon/multimodal/learners/matching.py
+@@ -11,7 +11,7 @@ import warnings
+ from datetime import timedelta
+ from typing import Callable, Dict, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import numpy as np
+ import pandas as pd
+ import torch
+diff --git a/multimodal/src/autogluon/multimodal/learners/ner.py b/multimodal/src/autogluon/multimodal/learners/ner.py
+index 78e3a79..53e7058 100644
+--- a/multimodal/src/autogluon/multimodal/learners/ner.py
++++ b/multimodal/src/autogluon/multimodal/learners/ner.py
+@@ -5,7 +5,7 @@ import warnings
+ from datetime import timedelta
+ from typing import Callable, Dict, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import pandas as pd
+ from omegaconf import DictConfig, OmegaConf
+ from torch import nn
+diff --git a/multimodal/src/autogluon/multimodal/optimization/deepspeed.py b/multimodal/src/autogluon/multimodal/optimization/deepspeed.py
+index ac7d79b..4bac038 100644
+--- a/multimodal/src/autogluon/multimodal/optimization/deepspeed.py
++++ b/multimodal/src/autogluon/multimodal/optimization/deepspeed.py
+@@ -17,18 +17,18 @@
+ import logging
+ from typing import Any, Dict, Generator, List, Mapping, Optional, Tuple, Union, cast
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+-from lightning.pytorch.accelerators.cuda import CUDAAccelerator
+-from lightning.pytorch.overrides.base import _LightningModuleWrapperBase, _LightningPrecisionModuleWrapperBase
+-from lightning.pytorch.plugins.environments.cluster_environment import ClusterEnvironment
+-from lightning.pytorch.plugins.precision import PrecisionPlugin
+-from lightning.pytorch.strategies import DeepSpeedStrategy
+-from lightning.pytorch.utilities import GradClipAlgorithmType
+-from lightning.pytorch.utilities.exceptions import MisconfigurationException
+-from lightning.pytorch.utilities.model_helpers import is_overridden
+-from lightning.pytorch.utilities.rank_zero import rank_zero_warn
+-from lightning.pytorch.utilities.types import _PATH
++from pytorch_lightning.accelerators.cuda import CUDAAccelerator
++from pytorch_lightning.overrides.base import _LightningModuleWrapperBase, _LightningPrecisionModuleWrapperBase
++from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
++from pytorch_lightning.plugins.precision import PrecisionPlugin
++from pytorch_lightning.strategies import DeepSpeedStrategy
++from pytorch_lightning.utilities import GradClipAlgorithmType
++from pytorch_lightning.utilities.exceptions import MisconfigurationException
++from pytorch_lightning.utilities.model_helpers import is_overridden
++from pytorch_lightning.utilities.rank_zero import rank_zero_warn
++from pytorch_lightning.utilities.types import _PATH
+ 
+ 
+ class CustomDeepSpeedStrategy(DeepSpeedStrategy):
+diff --git a/multimodal/src/autogluon/multimodal/optimization/lit_distiller.py b/multimodal/src/autogluon/multimodal/optimization/lit_distiller.py
+index ae3f9b5..e1622c0 100644
+--- a/multimodal/src/autogluon/multimodal/optimization/lit_distiller.py
++++ b/multimodal/src/autogluon/multimodal/optimization/lit_distiller.py
+@@ -1,11 +1,11 @@
+ import logging
+ from typing import Callable, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+ import torch.nn.functional as F
+ import torchmetrics
+-from lightning.pytorch.utilities import grad_norm
++from pytorch_lightning.utilities import grad_norm
+ from omegaconf import DictConfig
+ from torch import nn
+ from torch.nn.modules.loss import _Loss
+diff --git a/multimodal/src/autogluon/multimodal/optimization/lit_matcher.py b/multimodal/src/autogluon/multimodal/optimization/lit_matcher.py
+index 80db16b..fc3bd08 100644
+--- a/multimodal/src/autogluon/multimodal/optimization/lit_matcher.py
++++ b/multimodal/src/autogluon/multimodal/optimization/lit_matcher.py
+@@ -1,10 +1,10 @@
+ import logging
+ from typing import Callable, Dict, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+ import torchmetrics
+-from lightning.pytorch.utilities import grad_norm
++from pytorch_lightning.utilities import grad_norm
+ from omegaconf import DictConfig
+ from torch import nn
+ from torch.nn.modules.loss import _Loss
+diff --git a/multimodal/src/autogluon/multimodal/optimization/lit_mmdet.py b/multimodal/src/autogluon/multimodal/optimization/lit_mmdet.py
+index 0aa171b..753e3b2 100644
+--- a/multimodal/src/autogluon/multimodal/optimization/lit_mmdet.py
++++ b/multimodal/src/autogluon/multimodal/optimization/lit_mmdet.py
+@@ -1,10 +1,10 @@
+ import logging
+ from typing import Callable, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+ import torchmetrics
+-from lightning.pytorch.utilities import grad_norm
++from pytorch_lightning.utilities import grad_norm
+ from torch.nn.modules.loss import _Loss
+ from torchmetrics.aggregation import BaseAggregator
+ 
+diff --git a/multimodal/src/autogluon/multimodal/optimization/lit_module.py b/multimodal/src/autogluon/multimodal/optimization/lit_module.py
+index 0d93394..d3008ad 100644
+--- a/multimodal/src/autogluon/multimodal/optimization/lit_module.py
++++ b/multimodal/src/autogluon/multimodal/optimization/lit_module.py
+@@ -1,12 +1,12 @@
+ import logging
+ from typing import Callable, Dict, List, Optional, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+ import torch.nn.functional as F
+ import torchmetrics
+-from lightning.pytorch.strategies import DeepSpeedStrategy
+-from lightning.pytorch.utilities import grad_norm
++from pytorch_lightning.strategies import DeepSpeedStrategy
++from pytorch_lightning.utilities import grad_norm
+ from torch import nn
+ from torch.nn.modules.loss import _Loss
+ from torchmetrics.aggregation import BaseAggregator
+diff --git a/multimodal/src/autogluon/multimodal/utils/cache.py b/multimodal/src/autogluon/multimodal/utils/cache.py
+index 1188c87..a8643ed 100644
+--- a/multimodal/src/autogluon/multimodal/utils/cache.py
++++ b/multimodal/src/autogluon/multimodal/utils/cache.py
+@@ -6,9 +6,9 @@ import uuid
+ from pathlib import Path
+ from typing import Any, Dict, List, Optional, Sequence
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+-from lightning.pytorch.callbacks import BasePredictionWriter
++from pytorch_lightning.callbacks import BasePredictionWriter
+ 
+ from ..constants import BBOX, LM_TARGET, LOGIT_SCALE, LOGITS, TEMPLATE_LOGITS, WEIGHT
+ 
+diff --git a/multimodal/src/autogluon/multimodal/utils/checkpoint.py b/multimodal/src/autogluon/multimodal/utils/checkpoint.py
+index e94f215..7e3d290 100644
+--- a/multimodal/src/autogluon/multimodal/utils/checkpoint.py
++++ b/multimodal/src/autogluon/multimodal/utils/checkpoint.py
+@@ -4,10 +4,10 @@ import re
+ import shutil
+ from typing import Any, Dict, List, Optional, Tuple, Union
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import torch
+-from lightning.pytorch.strategies import DeepSpeedStrategy
+-from lightning.pytorch.utilities.rank_zero import rank_zero_warn
++from pytorch_lightning.strategies import DeepSpeedStrategy
++from pytorch_lightning.utilities.rank_zero import rank_zero_warn
+ 
+ from .cloud_io import _atomic_save
+ from .cloud_io import _load as pl_load
+@@ -37,7 +37,7 @@ def average_checkpoints(
+         avg_counts = {}
+         for per_path in checkpoint_paths:
+             if os.path.isdir(per_path + "-dir"):  # deepspeed save checkpoints into a directory
+-                from lightning.pytorch.utilities.deepspeed import convert_zero_checkpoint_to_fp32_state_dict
++                from pytorch_lightning.utilities.deepspeed import convert_zero_checkpoint_to_fp32_state_dict
+ 
+                 convert_zero_checkpoint_to_fp32_state_dict(per_path + "-dir", per_path)
+                 shutil.rmtree(per_path + "-dir")
+diff --git a/multimodal/src/autogluon/multimodal/utils/environment.py b/multimodal/src/autogluon/multimodal/utils/environment.py
+index 8609ee8..4f9a96e 100644
+--- a/multimodal/src/autogluon/multimodal/utils/environment.py
++++ b/multimodal/src/autogluon/multimodal/utils/environment.py
+@@ -6,7 +6,7 @@ import warnings
+ from typing import Dict, List, Optional, Tuple, Union
+ 
+ import torch
+-from lightning.pytorch.accelerators import find_usable_cuda_devices
++from pytorch_lightning.accelerators import find_usable_cuda_devices
+ from torch import nn
+ 
+ from autogluon.common.utils.resource_utils import ResourceManager
+diff --git a/multimodal/src/autogluon/multimodal/utils/hpo.py b/multimodal/src/autogluon/multimodal/utils/hpo.py
+index cdb8a1f..32b0471 100644
+--- a/multimodal/src/autogluon/multimodal/utils/hpo.py
++++ b/multimodal/src/autogluon/multimodal/utils/hpo.py
+@@ -2,7 +2,7 @@ import logging
+ import os
+ import shutil
+ 
+-import lightning.pytorch as pl
++import pytorch_lightning as pl
+ import yaml
+ 
+ from autogluon.common.utils.context import set_torch_num_threads
+diff --git a/timeseries/src/autogluon/timeseries/models/gluonts/abstract_gluonts.py b/timeseries/src/autogluon/timeseries/models/gluonts/abstract_gluonts.py
+index 1ffbbd4..b9183e9 100644
+--- a/timeseries/src/autogluon/timeseries/models/gluonts/abstract_gluonts.py
++++ b/timeseries/src/autogluon/timeseries/models/gluonts/abstract_gluonts.py
+@@ -518,7 +518,7 @@ class AbstractGluonTSModel(AbstractTimeSeriesModel):
+         **kwargs,
+     ) -> None:
+         # necessary to initialize the loggers
+-        import lightning.pytorch  # noqa
++        import pytorch_lightning  # noqa
+ 
+         verbosity = kwargs.get("verbosity", 2)
+         for logger_name in logging.root.manager.loggerDict:
+@@ -565,7 +565,7 @@ class AbstractGluonTSModel(AbstractTimeSeriesModel):
+         early_stopping_patience: Optional[int] = None,
+     ) -> List[Callable]:
+         """Retrieve a list of callback objects for the GluonTS trainer"""
+-        from lightning.pytorch.callbacks import EarlyStopping, Timer
++        from pytorch_lightning.callbacks import EarlyStopping, Timer
+ 
+         callbacks = []
+         if time_limit is not None:
+diff --git a/timeseries/tests/unittests/models/test_gluonts.py b/timeseries/tests/unittests/models/test_gluonts.py
+index 7b3ce74..5406c3b 100644
+--- a/timeseries/tests/unittests/models/test_gluonts.py
++++ b/timeseries/tests/unittests/models/test_gluonts.py
+@@ -289,7 +289,7 @@ def catch_trainer_kwargs(model):
+ 
+ 
+ def test_when_custom_callbacks_passed_via_trainer_kwargs_then_trainer_receives_them():
+-    from lightning.pytorch.callbacks import RichModelSummary
++    from pytorch_lightning.callbacks import RichModelSummary
+ 
+     callback = RichModelSummary()
+     model = DLinearModel(
+@@ -301,7 +301,7 @@ def test_when_custom_callbacks_passed_via_trainer_kwargs_then_trainer_receives_t
+ 
+ 
+ def test_when_early_stopping_patience_provided_then_early_stopping_callback_created():
+-    from lightning.pytorch.callbacks import EarlyStopping
++    from pytorch_lightning.callbacks import EarlyStopping
+ 
+     patience = 7
+     model = SimpleFeedForwardModel(
+@@ -315,7 +315,7 @@ def test_when_early_stopping_patience_provided_then_early_stopping_callback_crea
+ 
+ 
+ def test_when_early_stopping_patience_is_none_then_early_stopping_callback_not_created():
+-    from lightning.pytorch.callbacks import EarlyStopping
++    from pytorch_lightning.callbacks import EarlyStopping
+ 
+     model = SimpleFeedForwardModel(
+         hyperparameters={"early_stopping_patience": None, **DUMMY_HYPERPARAMETERS},
+-- 
+2.45.2
+

@@ -13,7 +13,6 @@
 {% set Pillow = ">=10.0.1,<11" %}
 {% set pytorch = ">=2.2,<2.4" %}
 {% set lightning = ">=2.2,<2.4" %}
-{% set pytorch_lightning = ">=2.2,<2.4" %}
 {% set async_timeout = ">=4.0,<5" %}
 {% set transformers = ">=4.38.0,<4.41.0" %}
 {% set sentencepiece = "!=0.1.92,>=0.1.91" %}
@@ -30,6 +29,8 @@ source:
       - patches/0001-Disable-mypy-pytest-plugin.patch
       - patches/0002-Adjust-multimodal-requirements-in-setup.py.patch
       - patches/0003-Increase-ray-upperbound.patch
+      - patches/0004-Replace-lightning-pytorch-imports.patch
+      - patches/0005-Remove-lightning-from-setup.patch
 
 build:
   # A couple of dependencies are not available on linux-s390x.
@@ -157,52 +158,6 @@ outputs:
         - pytest -v tests -k "not (test_check_style or test_dynamic_resource_allocation)"
         - python -c "import autogluon.core.version; assert autogluon.core.version.__version__ == '{{ version }}'"
 
-  - name: {{ name }}.eda
-    build:
-      script: python -m pip install ./eda -v --no-deps --no-build-isolation
-      script_env:
-        RELEASE=1
-    requirements:
-      host:
-        - python
-        - pip
-        - setuptools
-        - wheel
-      run:
-        - python
-        - numpy {{ numpy }}
-        - scipy {{ scipy }}
-        - scikit-learn {{ scikit_learn }}
-        - pandas {{ pandas }}
-        - matplotlib-base >=3.4,<3.7
-        - missingno >=0.5.1,<0.6
-        - phik >=0.12.2,<0.13
-        - seaborn >=0.12.0,<0.13
-        - ipywidgets >=7.7.1,<9.0
-        - shap >=0.44,<0.45
-        - yellowbrick >=1.5,<1.6
-        - pyod >=1.1,<1.2
-        - suod >=0.0.8,<0.1
-        - ipython >7.16,<8.13
-        - {{ pin_subpackage('autogluon.core', exact=True) }}
-        - {{ pin_subpackage('autogluon.common', exact=True) }}
-        - {{ pin_subpackage('autogluon.features', exact=True) }}
-        - {{ pin_subpackage('autogluon.tabular', exact=True) }}
-    test:
-      source_files:
-        - eda/tests
-      imports:
-        - autogluon.eda
-      requires:
-        - pip
-        - pytest
-      commands:
-        - pip check
-        - cd eda
-        # Skip test_check_style because it runs linters. We don't need to run linters.
-        - pytest -v tests -k "not test_check_style"
-        - python -c "import autogluon.eda.version; assert autogluon.eda.version.__version__ == '{{ version }}'"
-
   - name: {{ name }}.features
     build:
       script: python -m pip install ./features -v --no-deps --no-build-isolation
@@ -256,7 +211,7 @@ outputs:
         - tqdm {{ tqdm }}
         - boto3 {{ boto3 }}
         - pytorch {{ pytorch }}
-        - lightning {{ lightning }}
+        - pytorch-lightning {{ lightning }}
         ## transformers[sentencepiece] ##
         - transformers {{ transformers }}
         - sentencepiece {{ sentencepiece }}
@@ -360,15 +315,14 @@ outputs:
         - scipy {{ scipy }}
         - pandas {{ pandas }}
         - pytorch {{ pytorch }}
-        - lightning {{ lightning }}
-        - pytorch_lightning {{ pytorch_lightning }}
+        - pytorch-lightning {{ lightning }}
         ## transformers[sentencepiece] ##
         - transformers {{ transformers }}
         - sentencepiece {{ sentencepiece }}
         - protobuf
         ## transformers[sentencepiece] ##
         - huggingface_accelerate {{ huggingface_accelerate }}
-        - gluonts 0.15.1
+        - gluonts ==0.15.1
         - networkx {{ networkx }}
         - statsforecast >=1.4.0,<1.5
         - mlforecast >=0.10.0,<0.10.1
