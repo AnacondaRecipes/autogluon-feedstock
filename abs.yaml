@@ -2,5 +2,6 @@ upload_channels:
   - sfe1ed40
 
 channels:
- - https://staging.continuum.io/prefect/fs/ray-packages-feedstock/pr17/f81aa8b
- - https://staging.continuum.io/prefect/fs/gluon-ts-feedstock/pr4/238eea7
+ - https://staging.continuum.io/prefect/fs/ray-packages-feedstock/pr17/8ef3134
+ - https://staging.continuum.io/prefect/fs/gluon-ts-feedstock/pr4/5f5d6ae
+ - https://staging.continuum.io/prefect/fs/transformers-feedstock/pr16/3bfbc1c
