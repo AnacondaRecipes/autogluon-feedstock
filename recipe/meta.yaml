@@ -29,8 +29,6 @@ source:
       - patches/0001-Disable-mypy-pytest-plugin.patch
       - patches/0002-Adjust-multimodal-requirements-in-setup.py.patch
       - patches/0003-Increase-ray-upperbound.patch
-      - patches/0004-Replace-lightning-pytorch-imports.patch
-      - patches/0005-Remove-lightning-from-setup.patch
 
 build:
   # A couple of dependencies are not available on linux-s390x.
@@ -211,7 +209,7 @@ outputs:
         - tqdm {{ tqdm }}
         - boto3 {{ boto3 }}
         - pytorch {{ pytorch }}
-        - pytorch-lightning {{ lightning }}
+        - lightning {{ lightning }}
         ## transformers[sentencepiece] ##
         - transformers {{ transformers }}
         - sentencepiece {{ sentencepiece }}
@@ -316,6 +314,7 @@ outputs:
         - scipy {{ scipy }}
         - pandas {{ pandas }}
         - pytorch {{ pytorch }}
+        - lightning {{ lightning }}
         - pytorch-lightning {{ lightning }}
         ## transformers[sentencepiece] ##
         - transformers {{ transformers }}
