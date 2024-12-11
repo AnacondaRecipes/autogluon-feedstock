@@ -355,7 +355,7 @@ outputs:
         - cd timeseries
         # Only running smoketests because the other tests are very slow in Prefect. Though,
         # it is highly recommended to run the tests locally!
-        #- pytest -v tests/smoketests -k "not test_check_style" -m "not slow"
+        - pytest -v tests/smoketests -k "not test_check_style" -m "not slow"
         - python -c "import autogluon.timeseries.version; assert autogluon.timeseries.version.__version__ == '{{ version }}'"
 
 about:
