@@ -110,7 +110,7 @@ outputs:
         - pip check
         - cd common
         # Skip test_check_style because it runs linters. We don't need to run linters.
-        #- pytest -v tests -k "not test_check_style"
+        - pytest -v tests -k "not test_check_style"
         - python -c "import autogluon.common.version; assert autogluon.common.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.core
@@ -153,7 +153,7 @@ outputs:
         - cd core
         # Skip test_check_style because it runs linters. We don't need to run linters.
         # test_dynamic_resource_allocation can fail when there isn't enough memory available.
-        #- pytest -v tests -k "not (test_check_style or test_dynamic_resource_allocation)"
+        - pytest -v tests -k "not (test_check_style or test_dynamic_resource_allocation)"
         - python -c "import autogluon.core.version; assert autogluon.core.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.features
@@ -185,7 +185,7 @@ outputs:
         - pip check
         - cd features
         # Skip test_check_style because it runs linters. We don't need to run linters.
-        #- pytest -v tests -k "not test_check_style"
+        - pytest -v tests -k "not test_check_style"
         - python -c "import autogluon.features.version; assert autogluon.features.version.__version__ == '{{ version }}'"
 
   - name: {{ name }}.multimodal
