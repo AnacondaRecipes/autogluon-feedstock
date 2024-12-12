@@ -2,7 +2,9 @@
 {% set version = "1.1.1" %}
 
 {% set boto3 = ">=1.10,<2" %}
-{% set numpy = ">=1.21,<1.29" %}
+# Increase numpy lower bound to 1.25 to get np.dtypes (used in timeseries unittests)
+# See https://numpy.org/doc/2.0/release/1.25.0-notes.html#numpy-now-exposes-dtype-classes-in-np-dtypes
+{% set numpy = ">=1.25,<1.29" %}
 {% set pandas =  ">=2.0.0,<2.3.0" %}
 {% set scikit_learn = ">=1.3.0,<1.4.1" %}
 {% set scipy = ">=1.5.4,<1.13" %}
@@ -12,6 +14,8 @@
 {% set tqdm = ">=4.38,<5" %}
 {% set Pillow = ">=10.0.1,<11" %}
 {% set pytorch = ">=2.2,<2.4" %}
+# This pinning is used for both lightning and pytorch-lightning
+# Do not attempt to replace one library with another as this causes bugs/test failures
 {% set lightning = ">=2.2,<2.4" %}
 {% set async_timeout = ">=4.0,<5" %}
 {% set transformers = ">=4.38.0,<4.41.0" %}
