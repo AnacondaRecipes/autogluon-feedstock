@@ -16,7 +16,7 @@ index 436baae..4e32bbf 100644
  
  def try_import_ray() -> ModuleType:
 -    RAY_MAX_VERSION = "2.11.0"  # sync with core/setup.py
-+    RAY_MAX_VERSION = "2.38"  # sync with core/setup.py
++    RAY_MAX_VERSION = "2.38"
      ray_max_version_os_map = dict(
          Darwin=RAY_MAX_VERSION,
          Windows=RAY_MAX_VERSION,

@@ -2,8 +2,8 @@
 {% set version = "1.1.1" %}
 
 {% set boto3 = ">=1.10,<2" %}
-{% set numpy = ">=1.21,<1.29" %}
-{% set pandas =  ">=2.0.0,<2.3.0" %}
+{% set numpy_local = ">=1.21,<1.29" %}
+{% set pandas_local =  ">=2.0.0,<2.3.0" %}
 {% set scikit_learn = ">=1.3.0,<1.4.1" %}
 {% set scipy = ">=1.5.4,<1.13" %}
 {% set psutil = ">=5.7.3,<6" %}
@@ -93,8 +93,8 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy }}
-        - pandas {{ pandas }}
+        - numpy {{ numpy_local }}
+        - pandas {{ pandas_local }}
         - boto3 {{ boto3 }}
         - psutil {{ psutil }}
         - tqdm {{ tqdm }}
@@ -128,11 +128,11 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy }}
+        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
         - scikit-learn {{ scikit_learn }}
         - networkx {{ networkx }}
-        - pandas {{ pandas }}
+        - pandas {{ pandas_local }}
         - tqdm {{ tqdm }}
         - requests
         - matplotlib-base
@@ -171,8 +171,8 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy }}
-        - pandas {{ pandas }}
+        - numpy {{ numpy_local }}
+        - pandas {{ pandas_local }}
         - scikit-learn {{ scikit_learn }}
         - {{ pin_subpackage('autogluon.common', exact=True) }}
     test:
@@ -203,9 +203,9 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy }}
+        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
-        - pandas {{ pandas }}
+        - pandas {{ pandas_local }}
         - scikit-learn {{ scikit_learn }}
         - Pillow {{ Pillow }}
         - tqdm {{ tqdm }}
@@ -270,9 +270,9 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy }}
+        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
-        - pandas {{ pandas }}
+        - pandas {{ pandas_local }}
         - scikit-learn {{ scikit_learn }}
         - networkx {{ networkx }}
         - {{ pin_subpackage('autogluon.core', exact=True) }}
@@ -312,9 +312,9 @@ outputs:
       run:
         - python
         - joblib >=1.1,<2
-        - numpy {{ numpy }}
+        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
-        - pandas {{ pandas }}
+        - pandas {{ pandas_local }}
         - pytorch {{ pytorch }}
         - lightning {{ lightning }}
         - pytorch-lightning {{ lightning }}
