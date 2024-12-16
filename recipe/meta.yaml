@@ -128,15 +128,11 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
         - scikit-learn {{ scikit_learn }}
         - networkx {{ networkx }}
-        - pandas {{ pandas_local }}
-        - tqdm {{ tqdm }}
         - requests
         - matplotlib-base
-        - boto3 {{ boto3 }}
         - {{ pin_subpackage('autogluon.common', exact=True) }}
         # Extra group "all". autogluon requires autogluon.core[all].
         - ray-default >=2.10.0,<2.38      # increasing upperbound like conda-forge
@@ -171,8 +167,6 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy_local }}
-        - pandas {{ pandas_local }}
         - scikit-learn {{ scikit_learn }}
         - {{ pin_subpackage('autogluon.common', exact=True) }}
     test:
@@ -203,13 +197,9 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
-        - pandas {{ pandas_local }}
         - scikit-learn {{ scikit_learn }}
         - Pillow {{ Pillow }}
-        - tqdm {{ tqdm }}
-        - boto3 {{ boto3 }}
         - pytorch {{ pytorch }}
         - lightning {{ lightning }}
         ## transformers[sentencepiece] ##
@@ -270,9 +260,7 @@ outputs:
         - wheel
       run:
         - python
-        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
-        - pandas {{ pandas_local }}
         - scikit-learn {{ scikit_learn }}
         - networkx {{ networkx }}
         - {{ pin_subpackage('autogluon.core', exact=True) }}
@@ -312,9 +300,7 @@ outputs:
       run:
         - python
         - joblib >=1.1,<2
-        - numpy {{ numpy_local }}
         - scipy {{ scipy }}
-        - pandas {{ pandas_local }}
         - pytorch {{ pytorch }}
         - lightning {{ lightning }}
         - pytorch-lightning {{ lightning }}
@@ -329,7 +315,6 @@ outputs:
         - statsforecast >=1.4.0,<1.5
         - mlforecast >=0.10.0,<0.10.1
         - utilsforecast >=0.0.10,<0.0.11
-        - tqdm {{ tqdm }}
         - orjson >=3.9,<4
         - tensorboard >=2.9,<3
         - {{ pin_subpackage('autogluon.core', exact=True) }}
