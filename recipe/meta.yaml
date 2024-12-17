@@ -291,7 +291,6 @@ outputs:
         ## transformers[sentencepiece] ##
         - transformers {{ transformers }}
         - sentencepiece {{ sentencepiece }}
-        - protobuf
         ## transformers[sentencepiece] ##
         - huggingface_accelerate {{ huggingface_accelerate }}
         - gluonts ==0.15.1
