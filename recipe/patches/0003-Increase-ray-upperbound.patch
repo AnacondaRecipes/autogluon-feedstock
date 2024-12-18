@@ -1,0 +1,25 @@
+From 627d95b1f099411c8b657eaf0aa4fa919d0871ec Mon Sep 17 00:00:00 2001
+From: Mohamed Sentissi <msentissi@anaconda.com>
+Date: Fri, 22 Nov 2024 16:46:43 -0500
+Subject: [PATCH] Increase ray upperbound
+
+---
+ common/src/autogluon/common/utils/try_import.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/src/autogluon/common/utils/try_import.py b/common/src/autogluon/common/utils/try_import.py
+index 436baae..4e32bbf 100644
+--- a/common/src/autogluon/common/utils/try_import.py
++++ b/common/src/autogluon/common/utils/try_import.py
+@@ -30,7 +30,7 @@ def try_import_mxboard():
+ 
+ 
+ def try_import_ray() -> ModuleType:
+-    RAY_MAX_VERSION = "2.11.0"  # sync with core/setup.py
++    RAY_MAX_VERSION = "2.38"
+     ray_max_version_os_map = dict(
+         Darwin=RAY_MAX_VERSION,
+         Windows=RAY_MAX_VERSION,
+-- 
+2.45.2
+
